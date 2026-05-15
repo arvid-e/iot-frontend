@@ -1,23 +1,27 @@
 import {
-  BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
   LinearScale,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
 } from 'chart.js';
-import { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import { useEffect, useRef, useState } from 'react';
+import { Line } from 'react-chartjs-2';
 
 import { getHistoricalSensorData } from '../../services/sensor-data-service';
 import styles from './SensorDataChart.module.css';
 
 import type { SensorData } from '../../interfaces/sensor-data';
+import { useMQTT } from '../../services/websocket-hook';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
@@ -26,34 +30,61 @@ ChartJS.register(
 function makeOptions(title: string, yLabel: string) {
   return {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' as const },
       title: { display: true, text: title, font: { size: 16 } },
     },
     scales: {
-      x: { title: { display: true, text: 'Time' } },
-      y: { beginAtZero: false, title: { display: true, text: yLabel } },
+      x: { 
+        title: { display: true, text: 'Time' },
+        grid: {
+          display: true,
+          color: 'rgba(199, 192, 192, 0.24)',
+          drawOnChartArea: true,
+        }
+      },
+      y: { 
+        beginAtZero: false, 
+        title: { display: true, text: yLabel },
+        grid: {
+          display: true,
+          color: 'rgba(134, 129, 129, 0.29)',
+          drawOnChartArea: true,
+        }
+      },
     },
   };
 }
 
 function SensorDataChart() {
   const [sensorData, setSensorData] = useState<SensorData[]>([]);
+  const [isLive, setIsLive] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useMQTT((newData) => {
+    setSensorData((prev) => [...prev.slice(-20), newData]);
+    setIsLive(true);
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => setIsLive(false), 5000);
+  });
+
+  // Load historical data on mount
   useEffect(() => {
     const getData = async () => {
       try {
         setLoading(true);
         setError(null);
         const data = await getHistoricalSensorData();
-        if (!data) throw new Error('No data returned');
-        setSensorData(data);
+        setSensorData((data ?? []).slice(-20));
       } catch (err) {
         console.error('API error: ', err);
-        setError('Failed to load sensor data.');
+        setError('Failed to load historical sensor data.');
       } finally {
         setLoading(false);
       }
@@ -62,13 +93,12 @@ function SensorDataChart() {
   }, []);
 
   if (loading) return <div>Loading details...</div>;
-  if (error) return <div>{error}</div>;
-  if (sensorData.length === 0) return <div>No sensor data available.</div>;
 
   const labels = sensorData.map((d) =>
     new Date(d.createdAt).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
+      second: '2-digit',
     }),
   );
 
@@ -102,14 +132,23 @@ function SensorDataChart() {
 
   return (
     <div className={styles.container}>
+      {error && <div className={styles.error}>{error}</div>}
+
       <div className={styles.chartWrapper}>
-        <Bar
+        <div className={`${styles.status} ${isLive ? styles.live : ''}`}>
+          ● Live
+        </div>
+        <Line
           data={temperatureData}
           options={makeOptions('Temperature Over Time', 'Temperature (°C)')}
         />
       </div>
+
       <div className={styles.chartWrapper}>
-        <Bar
+        <div className={`${styles.status} ${isLive ? styles.live : ''}`}>
+          ● Live
+        </div>
+        <Line
           data={humidityData}
           options={makeOptions('Humidity Over Time', 'Humidity (%)')}
         />
