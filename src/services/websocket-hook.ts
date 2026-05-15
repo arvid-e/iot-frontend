@@ -1,15 +1,8 @@
 import mqtt from 'mqtt';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import type { SensorData } from '../interfaces/sensor-data';
 
-interface SensorData {
-  temperature: number;
-  humidity: number;
-  timestamp: number;
-}
-
-export function useMQTT() {
-  const [sensorData, setSensorData] = useState<SensorData | null>(null);
-
+export function useMQTT(onMessage: (data: SensorData) => void) {
   useEffect(() => {
     const client = mqtt.connect('ws://broker.emqx.io:8083/mqtt');
 
@@ -21,8 +14,7 @@ export function useMQTT() {
     client.on('message', (topic, message) => {
       try {
         const data = JSON.parse(message.toString());
-        console.log(data);
-        setSensorData(data);
+        onMessage({ ...data, createdAt: new Date().toISOString() });
       } catch (error) {
         console.error('Invalid message', error);
       }
@@ -32,6 +24,4 @@ export function useMQTT() {
       client.end();
     };
   }, []);
-
-  return { sensorData };
 }
