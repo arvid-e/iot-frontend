@@ -8,7 +8,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 
 import { getHistoricalSensorData } from '../../services/sensor-data-service';
@@ -36,22 +36,22 @@ function makeOptions(title: string, yLabel: string) {
       title: { display: true, text: title, font: { size: 16 } },
     },
     scales: {
-      x: { 
+      x: {
         title: { display: true, text: 'Time' },
         grid: {
           display: true,
           color: 'rgba(199, 192, 192, 0.24)',
           drawOnChartArea: true,
-        }
+        },
       },
-      y: { 
-        beginAtZero: false, 
+      y: {
+        beginAtZero: false,
         title: { display: true, text: yLabel },
         grid: {
           display: true,
           color: 'rgba(134, 129, 129, 0.29)',
           drawOnChartArea: true,
-        }
+        },
       },
     },
   };
@@ -61,18 +61,27 @@ function SensorDataChart() {
   const [sensorData, setSensorData] = useState<SensorData[]>([]);
   const [isLive, setIsLive] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ledOn, setLedOn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useMQTT((newData) => {
+  const handleData = useCallback((newData: SensorData) => {
     setSensorData((prev) => [...prev.slice(-20), newData]);
     setIsLive(true);
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = setTimeout(() => setIsLive(false), 5000);
-  });
+    timeoutRef.current = setTimeout(() => setIsLive(false), 8000);
+  }, []);
+
+  const { publishLED, isConnected } = useMQTT(handleData);
+
+  const handleToggleLED = () => {
+    const nextState = !ledOn;
+    setLedOn(nextState);
+    publishLED(nextState);
+  };
 
   // Load historical data on mount
   useEffect(() => {
@@ -133,6 +142,24 @@ function SensorDataChart() {
   return (
     <div className={styles.container}>
       {error && <div className={styles.error}>{error}</div>}
+
+      <div className={styles.controls}>
+        <button
+          onClick={handleToggleLED}
+          disabled={!isConnected}
+          className={`${styles.ledButton} ${ledOn ? styles.ledButtonOn : ''} ${!isConnected ? styles.disabled : ''}`}
+        >
+          {isConnected
+            ? ledOn
+              ? 'Turn LED Off'
+              : 'Turn LED On'
+            : 'No connection...'}
+        </button>
+
+        <div
+          className={`${styles.statusCircle} ${ledOn ? styles.circleOn : styles.circleOff}`}
+        ></div>
+      </div>
 
       <div className={styles.chartWrapper}>
         <div className={`${styles.status} ${isLive ? styles.live : ''}`}>

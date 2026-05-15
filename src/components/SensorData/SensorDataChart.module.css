@@ -31,3 +31,55 @@
 .live {
   color: #22c55e;
 }
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.ledButton {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ledButtonOn {
+  background: #334155;
+  border-color: #475569;
+}
+
+.statusCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 0.4s ease;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.circleOff {
+  background-color: #64748b;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.circleOn {
+  background-color: #fde047;
+  box-shadow:
+    0 0 15px #fde047,
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ledButton:disabled {
+  background-color: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.6;
+  border-color: #1e293b;
+}
