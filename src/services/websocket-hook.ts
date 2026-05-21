@@ -6,9 +6,10 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef<mqtt.MqttClient | null>(null);
   const STUDENT_ID = 'ae225aw';
+  const brokerUrl = import.meta.env.MQTT_BROKER_URL;
 
   useEffect(() => {
-    const client = mqtt.connect('ws://broker.emqx.io:8083/mqtt');
+    const client = mqtt.connect(brokerUrl);
     clientRef.current = client;
 
     client.on('connect', () => {
