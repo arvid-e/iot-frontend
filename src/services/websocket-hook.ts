@@ -6,14 +6,14 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
   const [isConnected, setIsConnected] = useState(false);
   const clientRef = useRef<mqtt.MqttClient | null>(null);
   const STUDENT_ID = 'ae225aw';
-  const brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL;
 
   useEffect(() => {
+    const brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL;
     const client = mqtt.connect(brokerUrl);
     clientRef.current = client;
 
     client.on('connect', () => {
-      console.log('Connected to MQTT Broker')
+      console.log('Connected to MQTT Broker');
       setIsConnected(true);
       client.subscribe(`lnu/iot/${STUDENT_ID}/sensor`);
     });
