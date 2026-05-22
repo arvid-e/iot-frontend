@@ -13,7 +13,7 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
     const client = mqtt.connect(brokerUrl, {
       username: import.meta.env.VITE_MQTT_USERNAME,
       password: import.meta.env.VITE_MQTT_PASSWORD,
-      rejectUnauthorized: false
+      rejectUnauthorized: false,
     });
     clientRef.current = client;
 
@@ -23,8 +23,14 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
       client.subscribe(`lnu/iot/${STUDENT_ID}/sensor`);
     });
 
-    client.on('close', () => setIsConnected(false));
-    client.on('error', () => setIsConnected(false));
+    client.on('close', () => {
+      console.log('MQTT connection closed');
+      setIsConnected(false);
+    });
+    client.on('error', (err) => {
+      console.log('MQTT error:', err);
+      setIsConnected(false);
+    });
 
     client.on('message', (topic, message) => {
       if (topic.endsWith('/sensor')) {
