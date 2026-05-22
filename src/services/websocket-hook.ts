@@ -9,7 +9,11 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
 
   useEffect(() => {
     const brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL;
-    const client = mqtt.connect(brokerUrl);
+    
+    const client = mqtt.connect(brokerUrl, {
+      username: import.meta.env.VITE_MQTT_USERNAME,
+      password: import.meta.env.VITE_MQTT_PASSWORD,
+    });
     clientRef.current = client;
 
     client.on('connect', () => {
