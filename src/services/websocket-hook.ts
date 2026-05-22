@@ -18,6 +18,9 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
     });
     clientRef.current = client;
 
+    console.log('client created:', client);
+    console.log('client options:', client.options);
+
     client.on('connect', () => {
       console.log('Connected to MQTT Broker');
       setIsConnected(true);
@@ -31,6 +34,14 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
     client.on('error', (err) => {
       console.log('MQTT error:', err);
       setIsConnected(false);
+    });
+
+    client.on('offline', () => {
+      console.log('MQTT offline');
+    });
+
+    client.on('reconnect', () => {
+      console.log('MQTT reconnecting');
     });
 
     client.on('message', (topic, message) => {
