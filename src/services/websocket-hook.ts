@@ -9,7 +9,6 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
 
   useEffect(() => {
     const brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL;
-    console.log('useMQTT effect running, brokerUrl:', brokerUrl);
 
     const client = mqtt.connect(brokerUrl, {
       username: import.meta.env.VITE_MQTT_USERNAME,
@@ -17,9 +16,6 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
       rejectUnauthorized: false,
     });
     clientRef.current = client;
-
-    console.log('client created:', client);
-    console.log('client options:', client.options);
 
     client.on('connect', () => {
       console.log('Connected to MQTT Broker');
