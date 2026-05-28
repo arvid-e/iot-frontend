@@ -141,15 +141,22 @@ function SensorDataChart() {
 
   return (
     <div className={styles.container}>
-      {error && <div className={styles.error}>{error}</div>}
-
       <div className={styles.controls}>
+        <div className={styles.messages}>
+          {error && <div className={styles.error}>{error}</div>}
+          <div className={styles.brokerMessage}>
+            {isConnected ? 'Connected to broker' : ''}
+          </div>
+          <div className={styles.brokerMessage}>
+            {isLive ? 'Connected to hardware' : ''}
+          </div>
+        </div>
         <button
           onClick={handleToggleLED}
-          disabled={!isConnected}
-          className={`${styles.ledButton} ${ledOn ? styles.ledButtonOn : ''} ${!isConnected ? styles.disabled : ''}`}
+          disabled={!isLive}
+          className={`${styles.ledButton} ${ledOn ? styles.ledButtonOn : ''} ${!isLive ? styles.disabled : ''}`}
         >
-          {isConnected
+          {isLive
             ? ledOn
               ? 'Turn LED Off'
               : 'Turn LED On'
