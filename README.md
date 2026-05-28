@@ -2,18 +2,18 @@
 
 Dashboard that displays historical or real time sensor data.
 
-## Run locally
+## Run dashboard locally
 
-1. Setup backend --> https://github.com/arvid-e/iot-backend
-2. Run `npm run dev`
+- Run `npm run dev`
 
-## Run using Docker
+## Run full application using Docker
 
 **Prerequisites**:  
 - Docker 
 - Docker compose
 - Backend: https://github.com/arvid-e/iot-backend
-- Deploy repository: https://github.com/arvid-e/iot-deploy 
+- Frontend: https://github.com/arvid-e/iot-frontend
+- Deploy: https://github.com/arvid-e/iot-deploy 
 
 **Steps**:  
 
