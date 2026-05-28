@@ -13,7 +13,6 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
     const client = mqtt.connect(brokerUrl, {
       username: import.meta.env.VITE_MQTT_USERNAME,
       password: import.meta.env.VITE_MQTT_PASSWORD,
-      rejectUnauthorized: false,
     });
     clientRef.current = client;
 
@@ -27,6 +26,7 @@ export function useMQTT(onMessage: (data: SensorData) => void) {
       console.log('MQTT connection closed');
       setIsConnected(false);
     });
+    
     client.on('error', (err) => {
       console.log('MQTT error:', err);
       setIsConnected(false);
